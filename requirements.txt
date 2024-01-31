@@ -5,11 +5,7 @@ beautifulsoup4
 huggingface-hub
 ipykernel
 unstructured
-pysqlite3-binary
-pyautogen
 chromadb
-sqlite3
-sqlitebrowser
-bookworm
+pysqlite3
 
 
