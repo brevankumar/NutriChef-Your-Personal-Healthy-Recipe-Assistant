@@ -8,6 +8,8 @@ unstructured
 pysqlite3-binary
 pyautogen
 chromadb
-pysqlite3-binary
+sqlite3
+sqlitebrowser
+bookworm
 
 
