@@ -1,6 +1,6 @@
 streamlit
 llama-index
-chromadb==0.3.29
+chromadb
 accelerate
 beautifulsoup4
 huggingface-hub
