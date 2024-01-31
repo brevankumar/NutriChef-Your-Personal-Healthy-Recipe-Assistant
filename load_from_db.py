@@ -41,7 +41,7 @@ def load_data():
         chroma_collection = db2.get_or_create_collection("quickstart")
         vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
 
-        llm = Gemini(api_key='AIzaSyA903hLQGcsRu0IrCVKJeoxV8JPwMzPCXk',model='gemini-pro')
+        llm = Gemini(api_key=os.getenv("google_api_key"),model='gemini-pro')
         embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-base-en-v1.5")
 
         service_context = ServiceContext.from_defaults(embed_model=embed_model,llm=llm)
