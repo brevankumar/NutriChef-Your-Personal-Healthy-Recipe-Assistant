@@ -1,0 +1,11 @@
+streamlit
+llama-index
+chromadb
+accelerate
+beautifulsoup4
+huggingface-hub
+ipykernel
+unstructured
+
+
+
