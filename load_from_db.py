@@ -9,6 +9,12 @@ from IPython.display import Markdown, display
 from llama_index.llms import Gemini
 import chromadb
 import streamlit as st
+from llama_index import ServiceContext, set_global_service_context
+from llama_index.llms import OpenAI
+from llama_index.embeddings import OpenAIEmbedding, HuggingFaceEmbedding
+from llama_index.node_parser import SentenceWindowNodeParser, SimpleNodeParser
+from sentence_transformers import SentenceTransformer
+
 
 
 # Enable Logging
@@ -29,26 +35,36 @@ st.header("NutriChef: Your Personal Healthy Recipe Assistant")
 
 if "messages" not in st.session_state.keys(): # Initialize the chat message history
     st.session_state.messages = [
-        {"role": "assistant", "content": "Ask me a question to get healthy recipes"}
+        {"role": "assistant", "content": "Ask me a question to get healthy recipes; Example for a query like {Provide recipe for spinach with recipe name, ingredients, preparation and nutrition facts}"}
     ]
 
 
 @st.cache_resource(show_spinner=False)
 def load_data():
     with st.spinner(text="Loading and indexing the data – hang tight! This should take 1-2 minutes."):
+        
         # load from disk
         db2 = chromadb.PersistentClient(path="./chroma_db")
         chroma_collection = db2.get_or_create_collection("quickstart")
         vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+        
 
+        # base Query Engine LLM
         llm = Gemini(api_key=os.getenv("google_api_key"),model='gemini-pro')
-        embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-base-en-v1.5")
 
-        service_context = ServiceContext.from_defaults(embed_model=embed_model,llm=llm)
+        # fine-tuned Embeddings model
+        embed_model = HuggingFaceEmbedding(model_name='Revankumar/fine_tuned_embeddings_for_healthy_recipes')
+
+        # fine-tuned ServiceContext
+        ctx = ServiceContext.from_defaults(
+            llm=llm,
+            embed_model=embed_model,
+        )
+        
 
         index = VectorStoreIndex.from_vector_store(
             vector_store,
-            service_context=service_context,
+            service_context=ctx,
         )
         
         return index
