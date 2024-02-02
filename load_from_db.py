@@ -18,6 +18,8 @@ from llama_index.memory import ChatMemoryBuffer
 from llama_index.tools import QueryEngineTool, ToolMetadata
 from llama_index.agent import ReActAgent
 from llama_index.query_engine import SubQuestionQueryEngine
+from llama_index.prompts import PromptTemplate
+
 
 
 load_dotenv() ## load all the environment variables
@@ -82,9 +84,40 @@ def load_data():
 
 index = load_data()
 
+query_engine = index.as_query_engine(response_mode="tree_summarize")
 
-chat_engine = index.as_chat_engine(chat_mode="react", verbose=True)
 
+context_str = """Make most of your meal vegetables and fruits – ½ of your plate.
+                Aim for color and variety, and remember that potatoes don’t count as vegetables on the Healthy Eating Plate because of their negative impact on blood sugar.
+
+                Go for whole grains – ¼ of your plate.
+                Whole and intact grains—whole wheat, barley, wheat berries, quinoa, oats, brown rice, and foods made with them, such as whole wheat pasta—have a milder effect on blood sugar and insulin than white bread, white rice, and other refined grains.
+
+                Protein power – ¼ of your plate.
+                Fish, poultry, beans, and nuts are all healthy, versatile protein sources—they can be mixed into salads, and pair well with vegetables on a plate. Limit red meat, and avoid processed meats such as bacon and sausage.
+
+                Healthy plant oils – in moderation.
+                Choose healthy vegetable oils like olive, canola, soy, corn, sunflower, peanut, and others, and avoid partially hydrogenated oils, which contain unhealthy trans fats. Remember that low-fat does not mean “healthy.”
+
+                Drink water, coffee, or tea.
+                Skip sugary drinks, limit milk and dairy products to one to two servings per day, and limit juice to a small glass per day."""
+
+
+new_summary_tmpl_str = (
+    "Context information is below.\n"
+    "---------------------\n"
+    "{context_str}\n"
+    "---------------------\n"
+    "Given the context information and not prior knowledge, "
+    "answer the query in the style of a nutritionist.\n"
+    "Query: {query_str}\n"
+    "Answer: "
+)
+new_summary_tmpl = PromptTemplate(new_summary_tmpl_str)
+
+query_engine.update_prompts(
+    {"response_synthesizer:summary_template": new_summary_tmpl}
+)
 
 
 if prompt := st.chat_input("Your question"): # Prompt for user input and save to chat history
@@ -99,7 +132,7 @@ for message in st.session_state.messages: # Display the prior chat messages
 if st.session_state.messages[-1]["role"] != "assistant":
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            response = chat_engine.chat(prompt)
+            response = query_engine.query(prompt)
             st.write(response.response)
             message = {"role": "assistant", "content": response.response}
             st.session_state.messages.append(message) # Add response to message history

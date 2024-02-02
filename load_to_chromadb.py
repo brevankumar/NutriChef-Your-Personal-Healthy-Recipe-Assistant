@@ -11,9 +11,10 @@ import chromadb
 import streamlit as st
 from llama_index import ServiceContext, set_global_service_context
 from llama_index.llms import OpenAI
-from llama_index.embeddings import z, HuggingFaceEmbedding
+from llama_index.embeddings import  HuggingFaceEmbedding
 from llama_index.node_parser import SentenceWindowNodeParser, SimpleNodeParser
 from llama_index.llms import Gemini
+from llama_index import GPTVectorStoreIndex
 
 
 
