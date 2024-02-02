@@ -11,5 +11,12 @@ pypdf
 google-generativeai
 transformers
 sentence_transformers
+python-dotenv
+langchain
+PyPDF2
+pdf2image
+faiss-cpu
+langchain_google_genai
+pillow
 
 

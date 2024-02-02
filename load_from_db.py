@@ -18,6 +18,12 @@ from llama_index.memory import ChatMemoryBuffer
 from llama_index.tools import QueryEngineTool, ToolMetadata
 from llama_index.agent import ReActAgent
 
+load_dotenv() ## load all the environment variables
+
+import google.generativeai as genai
+from PIL import Image
+
+genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
 
 
 # Enable Logging
@@ -53,7 +59,7 @@ def load_data():
         
 
         # base Query Engine LLM
-        llm = Gemini(api_key=os.getenv("google_api_key"),model='gemini-pro')
+        llm = Gemini(api_key=os.getenv("GOOGLE_API_KEY"),model='gemini-pro')
 
         # fine-tuned Embeddings model
         embed_model = HuggingFaceEmbedding(model_name='Revankumar/fine_tuned_embeddings_for_healthy_recipes')
@@ -96,7 +102,7 @@ context = """\
      You will answer questions about number of servings, ingredients, preparation instructions, and nutrition facts. \
  """
 
-llm = Gemini(api_key=os.getenv("google_api_key"),model='gemini-pro')
+llm = Gemini(api_key=os.getenv("GOOGLE_API_KEY"),model='gemini-pro')
 
 agent = ReActAgent.from_tools(
     query_engine_tools,
@@ -122,6 +128,5 @@ if st.session_state.messages[-1]["role"] != "assistant":
             st.write(response.response)
             message = {"role": "assistant", "content": response.response}
             st.session_state.messages.append(message) # Add response to message history
-
 
 
