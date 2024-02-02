@@ -17,6 +17,8 @@ from sentence_transformers import SentenceTransformer
 from llama_index.memory import ChatMemoryBuffer
 from llama_index.tools import QueryEngineTool, ToolMetadata
 from llama_index.agent import ReActAgent
+from llama_index.query_engine import SubQuestionQueryEngine
+
 
 load_dotenv() ## load all the environment variables
 
@@ -80,36 +82,9 @@ def load_data():
 
 index = load_data()
 
-query_engine = index.as_query_engine()
 
-query_engine_tools = [
-    QueryEngineTool(
-        query_engine=query_engine,
-        metadata=ToolMetadata(
-            name="recipe",
-            description=(
-                "Provides information about healthy recipes."
-                "Use a detailed plain text question as input to the tool."
-            ),
-        ),
-    )
-]
+chat_engine = index.as_chat_engine(chat_mode="react", verbose=True)
 
-
-# Add Context
-context = """\
-  You are a healthy recipe assistant who is an expert on the providing users with nutritious recipes.\
-     You will answer questions about number of servings, ingredients, preparation instructions, and nutrition facts. \
- """
-
-llm = Gemini(api_key=os.getenv("GOOGLE_API_KEY"),model='gemini-pro')
-
-agent = ReActAgent.from_tools(
-    query_engine_tools,
-    llm=llm,
-    verbose=True,
-    context=context
-)
 
 
 if prompt := st.chat_input("Your question"): # Prompt for user input and save to chat history
@@ -124,7 +99,7 @@ for message in st.session_state.messages: # Display the prior chat messages
 if st.session_state.messages[-1]["role"] != "assistant":
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            response = agent.chat(prompt)
+            response = chat_engine.chat(prompt)
             st.write(response.response)
             message = {"role": "assistant", "content": response.response}
             st.session_state.messages.append(message) # Add response to message history
