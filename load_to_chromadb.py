@@ -9,6 +9,12 @@ from IPython.display import Markdown, display
 from llama_index.llms import Gemini
 import chromadb
 import streamlit as st
+from llama_index import ServiceContext, set_global_service_context
+from llama_index.llms import OpenAI
+from llama_index.embeddings import z, HuggingFaceEmbedding
+from llama_index.node_parser import SentenceWindowNodeParser, SimpleNodeParser
+from llama_index.llms import Gemini
+
 
 
 # Enable Logging
@@ -220,18 +226,37 @@ loader = BeautifulSoupWebReader()
 documents = loader.load_data(urls=urls)
 
 
-db = chromadb.PersistentClient(path="./chroma_db")
-chroma_collection = db.get_or_create_collection("quickstart")
-
-# define embedding function
-embed_model = HuggingFaceEmbedding(model_name="BAAI/bge-base-en-v1.5")
-
+# base Query Engine LLM
 llm = Gemini(api_key=os.getenv("google_api_key"),model='gemini-pro')
+
+# fine-tuned Embeddings model
+embed_model = HuggingFaceEmbedding(
+    model_name='Revankumar/fine_tuned_embeddings_for_healthy_recipes'
+)
+
+
+# fine-tuned ServiceContext
+ctx = ServiceContext.from_defaults(
+    llm=llm,
+    embed_model=embed_model,
+)
+
+parser = SimpleNodeParser()
+
+nodes = parser.get_nodes_from_documents(documents)
+
+
+db = chromadb.PersistentClient(path="./chroma_db")
+
+chroma_collection = db.get_or_create_collection("quickstart")
 
 
 vector_store = ChromaVectorStore(chroma_collection=chroma_collection)
+
 storage_context = StorageContext.from_defaults(vector_store=vector_store)
+
 service_context = ServiceContext.from_defaults(embed_model=embed_model,llm=llm)
+
 index = VectorStoreIndex.from_documents(
     documents, storage_context=storage_context, service_context=service_context
 )

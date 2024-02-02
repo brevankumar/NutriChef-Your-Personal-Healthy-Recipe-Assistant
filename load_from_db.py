@@ -14,6 +14,9 @@ from llama_index.llms import OpenAI
 from llama_index.embeddings import OpenAIEmbedding, HuggingFaceEmbedding
 from llama_index.node_parser import SentenceWindowNodeParser, SimpleNodeParser
 from sentence_transformers import SentenceTransformer
+from llama_index.memory import ChatMemoryBuffer
+from llama_index.tools import QueryEngineTool, ToolMetadata
+from llama_index.agent import ReActAgent
 
 
 
@@ -71,8 +74,36 @@ def load_data():
 
 index = load_data()
 
+query_engine = index.as_query_engine()
 
-chat_engine = index.as_chat_engine(chat_mode="context", verbose=True)
+query_engine_tools = [
+    QueryEngineTool(
+        query_engine=query_engine,
+        metadata=ToolMetadata(
+            name="recipe",
+            description=(
+                "Provides information about healthy recipes."
+                "Use a detailed plain text question as input to the tool."
+            ),
+        ),
+    )
+]
+
+
+# Add Context
+context = """\
+  You are a healthy recipe assistant who is an expert on the providing users with nutritious recipes.\
+     You will answer questions about number of servings, ingredients, preparation instructions, and nutrition facts. \
+ """
+
+llm = Gemini(api_key=os.getenv("google_api_key"),model='gemini-pro')
+
+agent = ReActAgent.from_tools(
+    query_engine_tools,
+    llm=llm,
+    verbose=True,
+    context=context
+)
 
 
 if prompt := st.chat_input("Your question"): # Prompt for user input and save to chat history
@@ -87,29 +118,10 @@ for message in st.session_state.messages: # Display the prior chat messages
 if st.session_state.messages[-1]["role"] != "assistant":
     with st.chat_message("assistant"):
         with st.spinner("Thinking..."):
-            response = chat_engine.chat(prompt)
+            response = agent.chat(prompt)
             st.write(response.response)
             message = {"role": "assistant", "content": response.response}
             st.session_state.messages.append(message) # Add response to message history
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# Query Data
-query_engine = index.as_query_engine()
