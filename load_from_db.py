@@ -1,24 +1,17 @@
 import os
 from dotenv import load_dotenv
-from llama_index import download_loader
-from llama_index import VectorStoreIndex, ServiceContext
-from llama_index.vector_stores import ChromaVectorStore
-from llama_index.storage.storage_context import StorageContext
-from llama_index.embeddings import HuggingFaceEmbedding
+from llama_index.legacy import VectorStoreIndex, ServiceContext
+from llama_index.legacy.vector_stores import ChromaVectorStore
+from llama_index.legacy.storage.storage_context import StorageContext
 from IPython.display import Markdown, display
-from llama_index.llms import Gemini
+from llama_index.legacy.llms import Gemini
 import chromadb
 import streamlit as st
-from llama_index import ServiceContext, set_global_service_context
-from llama_index.llms import OpenAI
-from llama_index.embeddings import OpenAIEmbedding, HuggingFaceEmbedding
-from llama_index.node_parser import SentenceWindowNodeParser, SimpleNodeParser
-from sentence_transformers import SentenceTransformer
-from llama_index.memory import ChatMemoryBuffer
-from llama_index.tools import QueryEngineTool, ToolMetadata
-from llama_index.agent import ReActAgent
-from llama_index.query_engine import SubQuestionQueryEngine
-from llama_index.prompts import PromptTemplate
+
+from llama_index.legacy.embeddings import HuggingFaceEmbedding
+from llama_index.legacy.prompts import PromptTemplate
+from llama_index.legacy import ServiceContext
+
 
 
 
