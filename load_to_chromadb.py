@@ -1,22 +1,19 @@
 import os
 from dotenv import load_dotenv
-from llama_index import download_loader
-from llama_index import VectorStoreIndex, ServiceContext
-from llama_index.vector_stores import ChromaVectorStore
-from llama_index.storage.storage_context import StorageContext
-from llama_index.embeddings import HuggingFaceEmbedding
 from IPython.display import Markdown, display
-from llama_index.llms import Gemini
+
+from llama_index.legacy import VectorStoreIndex, ServiceContext
+from llama_index.legacy.vector_stores import ChromaVectorStore
+from llama_index.legacy.storage.storage_context import StorageContext
+from llama_index.legacy.embeddings import HuggingFaceEmbedding
+from llama_index.legacy.llms import Gemini
+from llama_index.legacy.node_parser import SentenceWindowNodeParser, SimpleNodeParser
+from llama_index.legacy.llms import Gemini
+from llama_index.legacy import GPTVectorStoreIndex
+from llama_index.legacy.readers.web import BeautifulSoupWebReader
+
 import chromadb
 import streamlit as st
-from llama_index import ServiceContext, set_global_service_context
-from llama_index.llms import OpenAI
-from llama_index.embeddings import  HuggingFaceEmbedding
-from llama_index.node_parser import SentenceWindowNodeParser, SimpleNodeParser
-from llama_index.llms import Gemini
-from llama_index import GPTVectorStoreIndex
-
-
 
 # Enable Logging
 import logging
@@ -30,6 +27,8 @@ logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
 # Load environment variables from the .env file
 load_dotenv()
+
+loader = BeautifulSoupWebReader()
 
 urls = [
     'https://www.hsph.harvard.edu/nutritionsource/kids-healthy-eating-plate/',
@@ -221,9 +220,6 @@ urls = [
     # Add the rest of the URLs here   
 ]
 
-
-BeautifulSoupWebReader = download_loader("BeautifulSoupWebReader")
-loader = BeautifulSoupWebReader()
 documents = loader.load_data(urls=urls)
 
 
@@ -258,7 +254,7 @@ storage_context = StorageContext.from_defaults(vector_store=vector_store)
 
 service_context = ServiceContext.from_defaults(embed_model=embed_model,llm=llm)
 
-index = VectorStoreIndex.from_documents(
+VectorStoreIndex.from_documents(
     documents, storage_context=storage_context, service_context=service_context
 )
 
